@@ -1,6 +1,8 @@
 import psutil
 import warnings
 
+import constant
+
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*pynvml.*")
 import pynvml
 
@@ -67,6 +69,8 @@ def get_user_gpu_stats(user_stats):
         handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_id)
         try:
             procs = pynvml.nvmlDeviceGetComputeRunningProcesses(handle)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
         except Exception as e:
             print(e)
             continue
@@ -75,7 +79,9 @@ def get_user_gpu_stats(user_stats):
             try:
                 proc = psutil.Process(p.pid)
                 username = proc.username()
-                user_stats[username]["usage"][f"gpu{gpu_id}"] += p.usedGpuMemory / 1024 ** 3
+                user_gpu = p.usedGpuMemory / 1024 ** 3
+                user_stats[username]["usage"][f"gpu{gpu_id}"] += user_gpu
+                user_stats[constant.TOTAL_USERNAME]["usage"][f"gpu{gpu_id}"] += user_gpu
             except psutil.NoSuchProcess:
                 continue
             except Exception as e:
@@ -94,6 +100,8 @@ def get_gpu_user_stats(gpu_stats):
         handle = pynvml.nvmlDeviceGetHandleByIndex(gid)
         try:
             procs = pynvml.nvmlDeviceGetComputeRunningProcesses(handle)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
         except Exception as e:
             print(e)
             continue

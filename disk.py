@@ -2,6 +2,8 @@ import os
 import psutil
 import subprocess
 
+import constant
+
 
 def get_ssd():
     data = psutil.disk_partitions(all=False)
@@ -58,14 +60,21 @@ def get_hdds():
 
 
 def get_dir_size(path):
-    """调用 du -s 统计目录大小 (bytes)"""
     if not os.path.exists(path):
         return 0
 
     try:
-        result = subprocess.check_output(["du", "-sb", path], text=True)
-        size = int(result.split()[0]) * 1. / 1024 ** 3
-        return size
+        result = subprocess.run(
+            ["du", "-sb", path],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=False
+        )
+
+        if result.stdout:
+            return int(result.stdout.split()[0]) / 1024 ** 3
+        return 0
     except Exception as e:
         print(e)
         return 0
@@ -80,7 +89,9 @@ def get_user_ssd_stats(user_stats):
     usernames = user_stats.keys()
     for entry in os.scandir(home_path):
         if entry.is_dir() and entry.name in usernames:
-            user_stats[entry.name]["usage"]["ssd"] = get_dir_size(entry.path)
+            user_ssd = get_dir_size(entry.path)
+            user_stats[entry.name]["usage"]["ssd"] = user_ssd
+            user_stats[constant.TOTAL_USERNAME]["usage"]["ssd"] += user_ssd
 
     return user_stats
 
@@ -90,12 +101,19 @@ def get_user_hdd_stats(user_stats, hdds):
 
     for username in usernames:
         hdd_sub_path = user_stats[username]["hdd_sub_path"]
-        if hdd_sub_path.startswith('/'):
-            hdd_sub_path = hdd_sub_path[1:]
+        if hdd_sub_path is None:
+            if username != constant.TOTAL_USERNAME:
+                for i in range(len(hdds)):
+                    user_stats[username]["usage"][f"hdd{i}"] = 0
+        else:
+            if hdd_sub_path.startswith('/'):
+                hdd_sub_path = hdd_sub_path[1:]
 
-        for i in range(len(hdds)):
-            hdd = hdds[i]
-            hdd_path = os.path.join(hdd["path"], hdd_sub_path)
-            user_stats[username]["usage"][f"hdd{i}"] += get_dir_size(hdd_path)
+            for i in range(len(hdds)):
+                hdd = hdds[i]
+                hdd_path = os.path.join(hdd["path"], hdd_sub_path)
+                user_hdd = get_dir_size(hdd_path)
+                user_stats[username]["usage"][f"hdd{i}"] = user_hdd
+                user_stats[constant.TOTAL_USERNAME]["usage"][f"hdd{i}"] += user_hdd
 
     return user_stats

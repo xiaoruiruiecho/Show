@@ -1,0 +1,1 @@
+TOTAL_USERNAME = "合计"

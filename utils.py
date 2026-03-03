@@ -3,8 +3,12 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 
-def colorize(val, low, high, fmt="{:.2f}"):
-    if abs(val) < 1e-9:
+def colorstr(string, color, fmt="{}"):
+    return f"{color}{fmt.format(string)}{Style.RESET_ALL}"
+
+
+def colornum(val, low, high, fmt="{:.2f}"):
+    if abs(val) < 1e-2:
         return fmt.format(val)
     elif val < low:
         return f"{Fore.GREEN}{fmt.format(val)}{Style.RESET_ALL}"

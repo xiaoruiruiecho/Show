@@ -1,5 +1,7 @@
 import psutil
 
+import constant
+
 
 def get_ram():
     ram = psutil.virtual_memory()
@@ -23,8 +25,9 @@ def get_user_ram_stats(user_stats):
             if username is None or username not in usernames:
                 continue
 
-            # 常驻内存
-            user_stats[username]["usage"]["ram"] += info["memory_info"].rss / 1024 ** 3
+            user_vram = info["memory_info"].rss / 1024 ** 3
+            user_stats[username]["usage"]["ram"] += user_vram
+            user_stats[constant.TOTAL_USERNAME]["usage"]["ram"] += user_vram
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 

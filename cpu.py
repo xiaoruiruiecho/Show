@@ -1,5 +1,6 @@
 import time
 import psutil
+import constant
 
 
 def get_user_cpu_stats(user_stats):
@@ -24,6 +25,7 @@ def get_user_cpu_stats(user_stats):
         try:
             cpu = p.cpu_percent(None)
             user_stats[p.info["username"]]["usage"]["cpu"] += cpu
+            user_stats[constant.TOTAL_USERNAME]["usage"]["cpu"] += cpu
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
         except Exception as e:

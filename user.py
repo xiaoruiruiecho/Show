@@ -1,5 +1,7 @@
 import json
 import pwd
+
+import constant
 from gpu import get_gpu_count
 from disk import get_hdds
 
@@ -31,6 +33,13 @@ def get_users(path):
                 "ssd_path": cfg.get("ssd_path", f"/home/{username}"),
                 "hdd_sub_path": cfg.get("hdd_sub_path", None)
             })
+
+        users.append({
+            "username": constant.TOTAL_USERNAME,
+            "nickname": constant.TOTAL_USERNAME,
+            "ssd_path": None,
+            "hdd_sub_path": None
+        })
 
         return users
     except Exception as e:

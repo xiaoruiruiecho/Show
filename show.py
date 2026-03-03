@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 import argparse
 from prettytable import PrettyTable
+from colorama import Fore
 
+import constant
 from cpu import get_user_cpu_stats
 from disk import get_hdds, get_ssd, get_user_ssd_stats, get_user_hdd_stats
 from gpu import get_user_gpu_stats, get_gpu_user_stats, get_gpus, get_default_gpu_stats
 from ram import get_ram, get_user_ram_stats
 from user import get_users, get_default_user_stats
-from utils import colorize
+from utils import colornum, colorstr
 
 
 def show_user_stats(user_stats, show_flag,
@@ -30,34 +32,61 @@ def show_user_stats(user_stats, show_flag,
 
     table = PrettyTable(headers)
     for user, userinfo in user_stats.items():
-        table_item = [user, userinfo["nickname"]]
+        if user == constant.TOTAL_USERNAME:
+            table_item = [colorstr(constant.TOTAL_USERNAME, color=Fore.RED),
+                          colorstr(constant.TOTAL_USERNAME, color=Fore.RED)]
+        else:
+            table_item = [user, userinfo["nickname"]]
         usage = userinfo["usage"]
 
         if show_flag["cpu"] or show_all:
             cpu = usage["cpu"]
-            # table_item.append(f"{cpu:.2f} %")
-            table_item.append(colorize(cpu, 20, 80))
+            if user == constant.TOTAL_USERNAME:
+                table_item.append(colornum(cpu, 50, 80))
+            else:
+                table_item.append(colornum(cpu, 20, 50))
         if show_flag["ram"] or show_all:
             ram = usage["ram"]
-            # table_item.append(f"{ram:.2f} GB / {RAM['total']:.2f} GB")
-            table_item.append(colorize(ram, RAM['total'] * 0.2, RAM['total'] * 0.8) + f" GB / {RAM['total']:.2f} GB")
+            if user == constant.TOTAL_USERNAME:
+                table_item.append(
+                    colornum(ram, RAM['total'] * 0.5, RAM['total'] * 0.8) + f" GB / {RAM['total']:.2f} GB")
+            else:
+                table_item.append(
+                    colornum(ram, RAM['total'] * 0.2, RAM['total'] * 0.5) + f" GB / {RAM['total']:.2f} GB")
         if show_flag["gpu"] or show_all:
             gpus_vram = [usage[f"gpu{gid}"] for gid in range(gpu_count)]
-            # table_item += [f"{gpus_vram[i]:.2f} GB / {GPUs[i]['total_vram']:.2f} GB" for i in range(len(gpus_vram))]
-            table_item += [colorize(gpus_vram[i],
-                                    GPUs[i]['total_vram'] * 0.2,
-                                    GPUs[i]['total_vram'] * 0.5) + f" GB / {GPUs[i]['total_vram']:.2f} GB"
-                           for i in range(len(gpus_vram))]
+            if user == constant.TOTAL_USERNAME:
+                table_item += [colornum(gpus_vram[i],
+                                        GPUs[i]['total_vram'] * 0.5,
+                                        GPUs[i]['total_vram'] * 0.8) + f" GB / {GPUs[i]['total_vram']:.2f} GB"
+                               for i in range(len(gpus_vram))]
+            else:
+                table_item += [colornum(gpus_vram[i],
+                                        GPUs[i]['total_vram'] * 0.2,
+                                        GPUs[i]['total_vram'] * 0.5) + f" GB / {GPUs[i]['total_vram']:.2f} GB"
+                               for i in range(len(gpus_vram))]
         if show_flag["ssd"] or show_all:
             ssd = usage["ssd"]
-            # table_item.append(f"{ssd:.2f} GB / {SSD['total']:.2f} TB")
-            table_item.append(colorize(ssd, SSD['total'] * 0.1, SSD['total'] * 0.3) + f" GB / {SSD['total']:.2f} TB")
+            if user == constant.TOTAL_USERNAME:
+                table_item.append(
+                    colornum(ssd, SSD['total'] * 1024 * 0.5,
+                             SSD['total'] * 1024 * 0.8) + f" GB / {SSD['total']:.2f} TB")
+            else:
+                table_item.append(
+                    colornum(ssd, SSD['total'] * 1024 * 0.1,
+                             SSD['total'] * 1024 * 0.3) + f" GB / {SSD['total']:.2f} TB")
         if show_flag["hdd"] or show_all:
             hdds = [usage[f"hdd{i}"] for i in range(len(HDDs))]
-            # table_item += [f"{hdds[i]:.2f} GB / {HDDs[i]['total']:.2f} TB" for i in range(len(hdds))]
-            table_item += [
-                colorize(hdds[i], HDDs[i]['total'] * 0.1, HDDs[i]['total'] * 0.3) + f" GB / {HDDs[i]['total']:.2f} TB"
-                for i in range(len(hdds))]
+            if user == constant.TOTAL_USERNAME:
+                table_item += [
+                    colornum(hdds[i], HDDs[i]['total'] * 1024 * 0.5,
+                             HDDs[i]['total'] * 1024 * 0.8) + f" GB / {HDDs[i]['total']:.2f} TB"
+                    for i in range(len(hdds))]
+            else:
+                table_item += [
+                    colornum(hdds[i], HDDs[i]['total'] * 1024 * 0.1,
+                             HDDs[i]['total'] * 1024 * 0.3) + f" GB / {HDDs[i]['total']:.2f} TB"
+                    for i in range(len(hdds))]
 
         table.add_row(table_item)
 
@@ -75,30 +104,36 @@ def show_gpu_stats(gpu_stats, show_flag, users):
         used_gpu_vram = 0.
         for gpu, gpuinfo in gpu_stats.items():
             used_gpu_vram += gpuinfo["usage"]["users"][user["username"]]
-        if used_gpu_vram > 1.:
+        if used_gpu_vram > 1e-2:
             used_users.append(user)
 
     users = used_users
-    headers = ["GPU ID", "GPU NAME", "Util (%)", "Power (W)"]
+    headers = ["GPU ID", "GPU NAME", "Util (%)", "Power (W)", "VRAM (GB)"]
     headers += [f"{user['nickname']} VRAM (GB)" for user in users]
-    headers.append("其他用户 VRAM (GB)")
+    headers += ["Available VRAM (GB)"]
 
     table = PrettyTable(headers)
     for gpu, gpuinfo in gpu_stats.items():
         usage = gpuinfo["usage"]
         table_item = [gpu,
                       gpuinfo["gpu_name"],
-                      colorize(usage['util'], 0.1, 0.8),
-                      colorize(usage['power'], gpuinfo['power_limit'] * 0.5, gpuinfo['power_limit'] * 0.8)
+                      colornum(usage['util'], 50, 80),
+                      colornum(usage['power'], gpuinfo['power_limit'] * 0.5, gpuinfo['power_limit'] * 0.8)
                       + f" W / {gpuinfo['power_limit']:.2f} W"]
 
+        total_used_vram = 0.
         total_vram = gpuinfo["total_vram"]
+        user_vram_list = []
         for user in users:
-            table_item.append(colorize(usage['users'][user['username']],
-                                       total_vram * 0.2,
-                                       total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
+            user_vram = usage['users'][user['username']]
+            total_used_vram += user_vram
+            user_vram_list.append(colornum(user_vram,
+                                           total_vram * 0.2,
+                                           total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
 
-        table_item.append(f"< 1.00 GB / {total_vram:.2f} GB")
+        table_item.append(colornum(total_used_vram, total_vram * 0.5, total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
+        table_item += user_vram_list
+        table_item.append(colornum(total_vram - total_used_vram, total_vram, total_vram) + f" GB / {total_vram:.2f} GB")
         table.add_row(table_item)
 
     print(table)
