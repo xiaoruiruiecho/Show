@@ -1,9 +1,10 @@
 import json
+import pwd
 import psutil
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*pynvml.*")
-import pynvml
+from gpu import get_gpu_count
 
 
 def get_users(path):
@@ -23,7 +24,7 @@ def get_users(path):
 
     try:
         users = []
-        system_usernames = [entry.pw_name for entry in pwd.getpwall()]
+        system_usernames = ["root"] + [entry.pw_name for entry in pwd.getpwall() if 1000 < entry.pw_uid <= 60000]
 
         for username in system_usernames:
             cfg = config_users.get(username, {})
@@ -38,16 +39,6 @@ def get_users(path):
     except Exception as e:
         print(e)
         exit(1)
-
-    # try:
-    #     data = json.load(open(path))
-    #     users = data["users"]
-    #     # TODO: users校验
-    #
-    #     return users
-    # except Exception as e:
-    #     print(e)
-    #     exit(1)
 
 
 def get_ram():
@@ -115,34 +106,6 @@ def get_hdds():
     return hdds
 
 
-def get_gpu_count():
-    pynvml.nvmlInit()
-    gpu_count = pynvml.nvmlDeviceGetCount()
-    pynvml.nvmlShutdown()
-
-    return gpu_count
-
-
-def get_gpus():
-    pynvml.nvmlInit()
-    gpu_count = pynvml.nvmlDeviceGetCount()
-    gpus = []
-
-    for gpu_id in range(gpu_count):
-        handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_id)
-        gpu_name = pynvml.nvmlDeviceGetName(handle)
-        total_vram = pynvml.nvmlDeviceGetMemoryInfo(handle).total / 1024 ** 3  # GB
-        power_limit = pynvml.nvmlDeviceGetEnforcedPowerLimit(handle) / 1000  # W
-
-        gpus.append({
-            "gpu_id": gpu_id,
-            "gpu_name": gpu_name,
-            "total_vram": total_vram,
-            "power_limit": power_limit
-        })
-
-    pynvml.nvmlShutdown()
-    return gpus
 
 
 def get_default_user_stats(users):
@@ -169,27 +132,6 @@ def get_default_user_stats(users):
 
     return user_stats
 
-
-def get_default_gpu_stats(users):
-    gpus = get_gpus()
-    gpu_count = len(gpus)
-    gpu_stats = {}
-
-    for i in range(gpu_count):
-        gpu_stats[f"gpu{i}"] = {
-            "gpu_name": gpus[i]["gpu_name"],
-            "total_vram": gpus[i]["total_vram"],
-            "power_limit": gpus[i]["power_limit"],
-            "usage": {
-                "users": {}
-            }
-        }
-        for user in users:
-            gpu_stats[f"gpu{i}"]["usage"]["util"] = 0.
-            gpu_stats[f"gpu{i}"]["usage"]["power"] = 0.
-            gpu_stats[f"gpu{i}"]["usage"]["users"][f"{user['username']}"] = 0.  # VRAM
-
-    return gpu_stats
 
 
 if __name__ == "__main__":

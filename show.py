@@ -4,9 +4,9 @@ from prettytable import PrettyTable
 
 from cpu import get_user_cpu_stats
 from disk import get_user_ssd_stats, get_user_hdd_stats
-from gpu import get_user_gpu_stats, get_gpu_user_stats
+from gpu import get_user_gpu_stats, get_gpu_user_stats, get_gpus, get_default_gpu_stats
 from ram import get_user_ram_stats
-from utils import get_default_user_stats, get_hdds, get_gpus, get_default_gpu_stats, get_users, get_ram, get_ssd
+from utils import get_default_user_stats, get_hdds, get_users, get_ram, get_ssd
 
 
 def show_user_stats(user_stats, show_flag,
@@ -31,7 +31,7 @@ def show_user_stats(user_stats, show_flag,
     for user, userinfo in user_stats.items():
         table_item = [user, userinfo["nickname"]]
         usage = userinfo["usage"]
-        
+
         if show_flag["cpu"] or show_all:
             cpu = usage["cpu"]
             table_item.append(f"{cpu:.2f} %")
@@ -99,7 +99,8 @@ def main():
     parser.add_argument("-d", "--disk", action="store_true", help="展示硬盘基本使用情况")
     parser.add_argument("-a", "--all", action="store_true", help="展示所有资源基本使用情况")
     parser.add_argument("-G", "--GPU", action="store_true", help="展示GPU详细使用情况")
-    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", action="store_true", help="config.json所在路径")
+    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", action="store_true",
+                        help="config.json所在路径")
     args = parser.parse_args()
 
     print("Loading ......")
@@ -133,6 +134,7 @@ def main():
 
         show_user_stats(user_stats, show_flag, SSD=SSD, RAM=RAM, GPUs=GPUs, HDDs=HDDs)
     else:
+
         main_args = ["cpu", "gpu", "ram", "disk", "all"]
         if any(getattr(args, arg) for arg in main_args):
             if args.all:
@@ -154,7 +156,6 @@ def main():
                 show_flag["hdd"] = True
 
             show_user_stats(user_stats, show_flag, SSD=SSD, RAM=RAM, GPUs=GPUs, HDDs=HDDs)
-
         if args.GPU:
             show_flag["GPU"] = True
             gpu_stats = get_gpu_user_stats(gpu_stats)
@@ -167,7 +168,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         exit(1)
-
 
 """
 Windows:
