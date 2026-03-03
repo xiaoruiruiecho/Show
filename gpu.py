@@ -71,7 +71,6 @@ def get_user_gpu_stats(user_stats):
             print(e)
             continue
 
-
         for p in procs:
             try:
                 proc = psutil.Process(p.pid)

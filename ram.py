@@ -1,6 +1,17 @@
 import psutil
 
 
+def get_ram():
+    ram = psutil.virtual_memory()
+
+    return {
+        "total": ram.total / 1024 ** 3,
+        "used": ram.available / 1024 ** 3,
+        "free": ram.free / 1024 ** 3,
+        "usage": ram.percent
+    }
+
+
 def get_user_ram_stats(user_stats):
     """统计每个用户的内存使用情况"""
     usernames = user_stats.keys()

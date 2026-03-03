@@ -1,5 +1,6 @@
 import json
 
+
 def json_test():
     data = json.load(open("config.json"))
     print(type(data))

@@ -1,5 +1,60 @@
 import os
+import psutil
 import subprocess
+
+
+def get_ssd():
+    data = psutil.disk_partitions(all=False)
+    ssd = {
+        "total": 0.,
+        "used": 0.,
+        "free": 0.,
+        "usage": 0.
+    }
+
+    for disk in data:
+        if not disk.device.startswith("/dev/") or "/dev/sd" in disk.device:
+            continue
+        if "/dev/sd" in disk.device:
+            continue
+
+        try:
+            usage = psutil.disk_usage(disk.mountpoint)
+        except PermissionError:
+            continue
+
+        ssd["total"] += usage.total / 1023 ** 4
+        ssd["used"] += usage.used / 1023 ** 4
+        ssd["free"] += usage.free / 1023 ** 4
+
+    if ssd["total"] > 1:
+        ssd["usage"] = ssd["used"] / ssd["total"]
+
+    return ssd
+
+
+def get_hdds():
+    data = psutil.disk_partitions(all=False)
+    hdds = []
+
+    for disk in data:
+        if "/dev/sd" in disk.device:
+            try:
+                usage = psutil.disk_usage(disk.mountpoint)
+                hdds.append({
+                    "device": disk.device,
+                    "path": disk.mountpoint,
+                    "type": disk.fstype,
+                    "total": usage.total / 1024 ** 4,
+                    "used": usage.used / 1024 ** 4,
+                    "free": usage.free / 1024 ** 4,
+                    "usage": usage.percent
+                })
+            except PermissionError:
+                # 有些挂载点可能权限不足
+                continue
+
+    return hdds
 
 
 def get_dir_size(path):
@@ -11,7 +66,8 @@ def get_dir_size(path):
         result = subprocess.check_output(["du", "-sb", path], text=True)
         size = int(result.split()[0]) * 1. / 1024 ** 3
         return size
-    except Exception:
+    except Exception as e:
+        print(e)
         return 0
 
 
