@@ -1,7 +1,11 @@
 __pycache__
 .idea
+build
+dist
+show
 
 ._*
 *.exe
+*.spec
 *.json
-show
+
