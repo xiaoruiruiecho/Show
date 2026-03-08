@@ -2,8 +2,8 @@ import json
 import pwd
 
 from . import constant
-from gpu import get_gpu_count
-from disk import get_hdds
+from .gpu import get_gpu_count
+from .disk import get_hdds
 
 
 def get_users(path):
