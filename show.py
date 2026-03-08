@@ -3,13 +3,13 @@ import argparse
 from prettytable import PrettyTable
 from colorama import Fore
 
-import constant
-from cpu import get_user_cpu_stats
-from disk import get_hdds, get_ssd, get_user_ssd_stats, get_user_hdd_stats
-from gpu import get_user_gpu_stats, get_gpu_user_stats, get_gpus, get_default_gpu_stats
-from ram import get_ram, get_user_ram_stats
-from user import get_users, get_default_user_stats
-from utils import colornum, colorstr
+from core import constant
+from core.cpu import get_user_cpu_stats
+from core.disk import get_hdds, get_ssd, get_user_ssd_stats, get_user_hdd_stats
+from core.gpu import get_user_gpu_stats, get_gpu_user_stats, get_gpus, get_default_gpu_stats
+from core.ram import get_ram, get_user_ram_stats
+from core.user import get_users, get_default_user_stats
+from core.utils import colornum, colorstr
 
 
 def show_user_stats(user_stats, show_flag,
@@ -148,7 +148,7 @@ def main():
     parser.add_argument("-d", "--disk", action="store_true", help="展示硬盘基本使用情况")
     parser.add_argument("-a", "--all", action="store_true", help="展示所有资源基本使用情况")
     parser.add_argument("-G", "--GPU", action="store_true", help="展示GPU详细使用情况")
-    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", action="store_true",
+    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", type="str",
                         help="config.json所在路径")
     args = parser.parse_args()
 

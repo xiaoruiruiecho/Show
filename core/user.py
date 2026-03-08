@@ -13,7 +13,7 @@ def get_users(path):
         assert isinstance(data, list) and len(data) > 0
     except Exception as e:
         print(e)
-        exit(1)
+        data = []
 
     config_users = {
         u.get("username"): u
