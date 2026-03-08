@@ -1,7 +1,7 @@
 import json
 import pwd
 
-import constant
+from . import constant
 from gpu import get_gpu_count
 from disk import get_hdds
 

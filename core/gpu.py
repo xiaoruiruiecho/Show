@@ -1,7 +1,6 @@
 import psutil
 import warnings
-
-import constant
+from . import constant
 
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*pynvml.*")
 import pynvml

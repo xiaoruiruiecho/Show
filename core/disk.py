@@ -2,7 +2,7 @@ import os
 import psutil
 import subprocess
 
-import constant
+from . import constant
 
 
 def get_ssd():

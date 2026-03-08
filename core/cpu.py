@@ -1,6 +1,6 @@
 import time
 import psutil
-import constant
+from . import constant
 
 
 def get_user_cpu_stats(user_stats):

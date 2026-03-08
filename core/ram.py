@@ -1,6 +1,5 @@
 import psutil
-
-import constant
+from . import constant
 
 
 def get_ram():
