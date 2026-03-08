@@ -148,7 +148,7 @@ def main():
     parser.add_argument("-d", "--disk", action="store_true", help="展示硬盘基本使用情况")
     parser.add_argument("-a", "--all", action="store_true", help="展示所有资源基本使用情况")
     parser.add_argument("-G", "--GPU", action="store_true", help="展示GPU详细使用情况")
-    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", type="str",
+    parser.add_argument("-j", "--json", default="/home/rui/Config/Show/config.json", type=str,
                         help="config.json所在路径")
     args = parser.parse_args()
 
