@@ -108,7 +108,7 @@ def show_gpu_stats(gpu_stats, show_flag, users):
             used_users.append(user)
 
     users = used_users
-    headers = ["GPU ID", "GPU NAME", "Util (%)", "Power (W)", "VRAM (GB)"]
+    headers = ["GPU ID", "GPU NAME", "Util (%)", "Power (W)", "Used VRAM (GB)"]
     headers += [f"{user['nickname']} VRAM (GB)" for user in users]
     headers += ["Available VRAM (GB)"]
 
@@ -133,7 +133,7 @@ def show_gpu_stats(gpu_stats, show_flag, users):
 
         table_item.append(colornum(total_used_vram, total_vram * 0.5, total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
         table_item += user_vram_list
-        table_item.append(colornum(total_vram - total_used_vram, total_vram, total_vram) + f" GB / {total_vram:.2f} GB")
+        table_item.append(colornum(total_vram - total_used_vram, total_vram * 0.2, total_vram * 0.8, reverse=True) + f" GB / {total_vram:.2f} GB")
         table.add_row(table_item)
 
     print(table)
