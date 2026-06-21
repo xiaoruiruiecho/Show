@@ -108,18 +108,18 @@ def show_gpu_stats(gpu_stats, show_flag, users):
             used_users.append(user)
 
     users = used_users
-    headers = ["GPU ID", "GPU NAME", "Util (%)", "Power (W)", "Used VRAM (GB)"]
-    headers += [f"{user['nickname']} VRAM (GB)" for user in users]
-    headers += ["Available VRAM (GB)"]
+    headers = ["GPU ID", "GPU NAME", "Util (%)", "Available VRAM (GB)"] # "Power (W)", "Used VRAM (GB)"]
+    headers += [f"{user['nickname']}" for user in users]
+    # headers += ["Available VRAM (GB)"]
 
     table = PrettyTable(headers)
     for gpu, gpuinfo in gpu_stats.items():
         usage = gpuinfo["usage"]
         table_item = [gpu,
-                      gpuinfo["gpu_name"],
-                      colornum(usage['util'], 50, 80),
-                      colornum(usage['power'], gpuinfo['power_limit'] * 0.5, gpuinfo['power_limit'] * 0.8)
-                      + f" W / {gpuinfo['power_limit']:.2f} W"]
+                      constant.GPU_ABBREVIATION.get(gpuinfo["gpu_name"].strip(), gpuinfo["gpu_name"]),
+                      colornum(usage['util'], 50, 80)]
+                      # colornum(usage['power'], gpuinfo['power_limit'] * 0.5, gpuinfo['power_limit'] * 0.8)
+                      # + f" W / {gpuinfo['power_limit']:.2f} W"]
 
         total_used_vram = 0.
         total_vram = gpuinfo["total_vram"]
@@ -129,11 +129,11 @@ def show_gpu_stats(gpu_stats, show_flag, users):
             total_used_vram += user_vram
             user_vram_list.append(colornum(user_vram,
                                            total_vram * 0.2,
-                                           total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
+                                           total_vram * 0.8) + f" GB")
 
-        table_item.append(colornum(total_used_vram, total_vram * 0.5, total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
-        table_item += user_vram_list
+        # table_item.append(colornum(total_used_vram, total_vram * 0.5, total_vram * 0.8) + f" GB / {total_vram:.2f} GB")
         table_item.append(colornum(total_vram - total_used_vram, total_vram * 0.2, total_vram * 0.8, reverse=True) + f" GB / {total_vram:.2f} GB")
+        table_item += user_vram_list
         table.add_row(table_item)
 
     print(table)

@@ -1,1 +1,6 @@
 TOTAL_USERNAME = "合计"
+
+GPU_ABBREVIATION = {
+    "NVIDIA RTX 5880 Ada Generation": "5880 Ada",
+    "NVIDIA H200 NVL": "H200"
+}
